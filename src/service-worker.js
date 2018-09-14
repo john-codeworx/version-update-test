@@ -1,6 +1,7 @@
 import '@babel/polyfill';
 import { set, get } from 'idb-keyval'
 
+// Use cache to check for new version (doesn't work in Firefox - in 'fetch' response.body is non-existant).
 // const cacheName = 'version';
 
 // self.addEventListener('install', async event => {
@@ -27,11 +28,12 @@ import { set, get } from 'idb-keyval'
 //           if (response.body) {
 //             const {value} = await response.body.getReader().read();
 //             const data = String.fromCharCode.apply(null, value);
+
 //             existingVersion = JSON.parse(data).version;
 //           } else {
 //             console.log(Object.keys(response));
 //             // console.log(response);
-//             existingVersion = 'no body...';
+//             existingVersion = 'no body 33...';
 //           }
 
 //           const newResponse = await fetch(event.request.url);
@@ -70,11 +72,19 @@ function sendMessage (message) {
 
 
 
-
+// Use idb to store version to check against (works in Chrome, Firefox, Safari).
 self.addEventListener('install', async event => {
-  const response = await fetch('./version.json');
-  const {version} = await response.json();
-  await set('version', version);
+  event.waitUntil(self.skipWaiting());
+
+  // only store the version on first install.
+  const v = await get('version');
+
+  if (!v) {
+    const response = await fetch('./version.json');
+    const {version} = await response.json();
+
+    await set('version', version);
+  }
 });
 
 self.addEventListener('fetch', async event => {
@@ -82,24 +92,42 @@ self.addEventListener('fetch', async event => {
 });
 
 self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+
   initVersionPoll();
 });
 
+self.addEventListener('message', async ({data}) => {
+  // user has accepted new version so update in idb.
+  if (data === 'update') {
+    const version = await get('new.version');
+
+    await set('version', version);
+  }
+});
+
 let init = true;
+
 function initVersionPoll () {
   if (!init) return;
-
   init = false;
 
-  setInterval(async () => {
-    const response = await fetch('./version.json');
-    const {version: newVersion} = await response.json();
-    const version = await get('version');
+  setInterval(poller, 5000);
+  poller();
+}
 
-    if (newVersion !== version) {
-      console.log(newVersion);
-      await set('version', newVersion);
-      sendMessage('version.update');
-    }
-  }, 1000);
+async function poller () {
+  // get the current version from the server then compare with local version.
+  const response = await fetch('./version.json');
+  const {version: newVersion} = await response.json();
+  const version = await get('version');
+
+  console.log(version, newVersion);
+
+  if (newVersion !== version) {
+    // keep the new version and notify the main thread that there's a new version.
+    await set('new.version', newVersion);
+
+    sendMessage('version.update');
+  }
 }
