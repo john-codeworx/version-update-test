@@ -24,9 +24,9 @@ if ('serviceWorker' in navigator) {
     console.log('ServiceWorker registration failed: ', err);
   });
 
-  navigator.serviceWorker.addEventListener('message', event => {
+  navigator.serviceWorker.addEventListener('message', ({data}) => {
     // display a message to the user when a new version is detected.
-    if (event.data === 'version.update') {
+    if (data === 'version.update') {
       document.getElementById('notification').style.display = 'block';
     }
   });
@@ -35,7 +35,7 @@ if ('serviceWorker' in navigator) {
   const controlledPromise = new Promise((resolve, reject) => {
     if (navigator.serviceWorker.controller) return resolve();
     navigator.serviceWorker.addEventListener('controllerchange', e => resolve());
-    setTimeout(() => reject(), 100);
+    setTimeout(reject, 100);
   });
 
   controlledPromise.then(() => console.log('controlled')).catch(() => window.location.reload());
