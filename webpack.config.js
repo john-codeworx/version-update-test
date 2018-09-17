@@ -1,12 +1,15 @@
 const path = require('path');
 
+const cwd = process.cwd();
+
 module.exports = {
   entry: {
-    'index': './src/index.js',
-    'service-worker': './src/service-worker.js'
+    'index': path.join(cwd, 'src', 'index.js'),
+    'service-worker': path.join(cwd, 'src', 'service-worker.js'),
+    'web-worker': path.join(cwd, 'src', 'web-worker.js')
   },
   output: {
-    path: path.join(__dirname, 'public'),
+    path: path.join(cwd, 'public'),
     filename: '[name].js'
   },
   module: {
@@ -22,5 +25,10 @@ module.exports = {
         }
       }
     ]
+  },
+  devServer: {
+    contentBase: path.join(__dirname, 'public'),
+    compress: true,
+    port: 8083
   }
 };
