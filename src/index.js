@@ -24,8 +24,13 @@ if ('serviceWorker' in navigator) {
     console.log('ServiceWorker registration failed: ', err);
   });
 
+  navigator.serviceWorker.ready.then((registration) => {
+    console.log('SW ready.')
+  });
+
   navigator.serviceWorker.addEventListener('message', ({data}) => {
     // display a message to the user when a new version is detected.
+
     if (data === 'version.update') {
       document.getElementById('notification').style.display = 'block';
     }
@@ -34,7 +39,7 @@ if ('serviceWorker' in navigator) {
   // detect if the SW is accessible for postMessage, refresh page if not (potential infinte loop if never resolved?).
   const controlledPromise = new Promise((resolve, reject) => {
     if (navigator.serviceWorker.controller) return resolve();
-    navigator.serviceWorker.addEventListener('controllerchange', e => resolve());
+    navigator.serviceWorker.addEventListener('controllerchange', resolve);
     setTimeout(reject, 100);
   });
 

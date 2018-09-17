@@ -1,5 +1,5 @@
 import '@babel/polyfill';
-import { set, get } from 'idb-keyval'
+import { set, get, del } from 'idb-keyval'
 
 // Use cache to check for new version (doesn't work in Firefox - in 'fetch' response.body is non-existant).
 // const cacheName = 'version';
@@ -62,6 +62,35 @@ import { set, get } from 'idb-keyval'
 
 
 
+self.addEventListener('fetch', async event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(async response => {
+        if (!event.request.url.match(/version.json$/)) {
+          return response || fetch(event.request);
+        }
+
+        const res = await fetch('./version.json');
+        const {version: newVersion} = await res.json();
+        const version = await get('version');
+
+        console.log(version, newVersion);
+
+        if (newVersion !== version) {
+          // keep the new version and notify the main thread that there's a new version.
+          await set('new.version', newVersion);
+
+          sendMessage('version.update');
+        }
+
+        return fetch(event.request);
+      })
+  )
+});
+
+
+
+
 function sendMessage (message) {
   self.clients.matchAll({includeUncontrolled: true, type: 'window'}).then(clients => {
     clients.forEach(client => {
@@ -69,6 +98,17 @@ function sendMessage (message) {
     })
   });
 }
+
+self.addEventListener('message', async ({data}) => {
+  // user has accepted new version so update in idb.
+  if (data === 'update') {
+    const version = await get('new.version');
+
+    await set('version', version);
+    await del('new.version');
+  }
+});
+
 
 
 
@@ -87,47 +127,37 @@ self.addEventListener('install', async event => {
   }
 });
 
-self.addEventListener('fetch', async event => {
-  initVersionPoll();
-});
+// self.addEventListener('fetch', async event => {
+//   initVersionPoll();
+// });
 
 self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 
-  initVersionPoll();
+  // initVersionPoll();
 });
 
-self.addEventListener('message', async ({data}) => {
-  // user has accepted new version so update in idb.
-  if (data === 'update') {
-    const version = await get('new.version');
+// let pollerInterval = null;
 
-    await set('version', version);
-  }
-});
+// function initVersionPoll () {
+//   if (pollerInterval) return;
 
-let init = true;
+//   pollerInterval = setInterval(poller, 1000 * 10);
+//   setTimeout(poller, 1000);
+// }
 
-function initVersionPoll () {
-  if (!init) return;
-  init = false;
+// async function poller () {
+//   // get the current version from the server then compare with local version.
+//   const response = await fetch('./version.json');
+//   const {version: newVersion} = await response.json();
+//   const version = await get('version');
 
-  setInterval(poller, 5000);
-  poller();
-}
+//   console.log(version, newVersion);
 
-async function poller () {
-  // get the current version from the server then compare with local version.
-  const response = await fetch('./version.json');
-  const {version: newVersion} = await response.json();
-  const version = await get('version');
+//   if (newVersion !== version) {
+//     // keep the new version and notify the main thread that there's a new version.
+//     await set('new.version', newVersion);
 
-  console.log(version, newVersion);
-
-  if (newVersion !== version) {
-    // keep the new version and notify the main thread that there's a new version.
-    await set('new.version', newVersion);
-
-    sendMessage('version.update');
-  }
-}
+//     sendMessage('version.update');
+//   }
+// }
