@@ -4,7 +4,8 @@ const cwd = process.cwd();
 
 module.exports = {
   entry: {
-    'index': path.join(cwd, 'src', 'index.js'),
+    'index-sw': path.join(cwd, 'src', 'index-sw.js'),
+    'index-ww': path.join(cwd, 'src', 'index-ww.js'),
     'service-worker': path.join(cwd, 'src', 'service-worker.js'),
     'web-worker': path.join(cwd, 'src', 'web-worker.js')
   },

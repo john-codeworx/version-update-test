@@ -1,8 +1,6 @@
-import '@babel/polyfill';
-
 const worker = new Worker('./web-worker.js');
 
-worker.postMessage('start'); // Start the worker.
+document.getElementById('notification').style.display = 'none';
 
 worker.addEventListener('message', ({data}) => {
   console.log(`Message from worker: ${data}`);
@@ -19,12 +17,14 @@ worker.addEventListener('message', ({data}) => {
 }, false);
 
 document.getElementById('reload').addEventListener('click', () => {
-  // notify the SW that the user has accepted the new version and hard reload the page.
-  worker.postMessage('update');
+  // notify the Worker that the user has accepted the new version and hard reload the page.
+  // worker.postMessage('update');
 
   setTimeout(() => {
     window.location.reload(true);
   }, 100);
 });
 
-document.getElementById('notification').style.display = 'none';
+window.addEventListener('load', (e) => {
+  worker.postMessage('start');
+});
