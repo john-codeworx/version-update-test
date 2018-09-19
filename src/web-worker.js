@@ -1,4 +1,5 @@
 import '@babel/polyfill';
+import 'universal-fetch';
 import { set, get, del } from 'idb-keyval';
 
 self.addEventListener('message', async ({data}) => {

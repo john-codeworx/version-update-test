@@ -14,7 +14,7 @@ worker.addEventListener('message', ({data}) => {
     default:
       console.log('Unknown message from worker.')
   }
-}, false);
+});
 
 document.getElementById('reload').addEventListener('click', () => {
   // notify the Worker that the user has accepted the new version and hard reload the page.
@@ -25,6 +25,6 @@ document.getElementById('reload').addEventListener('click', () => {
   }, 100);
 });
 
-window.addEventListener('load', (e) => {
+window.addEventListener('load', () => {
   worker.postMessage('start');
 });

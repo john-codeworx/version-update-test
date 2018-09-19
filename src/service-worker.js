@@ -1,4 +1,5 @@
 import '@babel/polyfill';
+import 'universal-fetch';
 import { set, get, del } from 'idb-keyval'
 
 // Use cache to check for new version (doesn't work in Firefox - in 'fetch' response.body is non-existant).
