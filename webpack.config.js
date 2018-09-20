@@ -4,10 +4,12 @@ const cwd = process.cwd();
 
 module.exports = {
   entry: {
-    'index-sw': path.join(cwd, 'src', 'index-sw.js'),
+    // 'index-sw': path.join(cwd, 'src', 'index-sw.js'),
     'index-ww': path.join(cwd, 'src', 'index-ww.js'),
-    'service-worker': path.join(cwd, 'src', 'service-worker.js'),
-    'web-worker': path.join(cwd, 'src', 'web-worker.js')
+    'service-worker': path.join(cwd, 'node_modules/versioning/src', 'service-worker.js'),
+    'web-worker': path.join(cwd, 'node_modules/versioning/src', 'web-worker.js')
+    // 'service-worker': path.join(cwd, 'src', 'service-worker.js'),
+    // 'web-worker': path.join(cwd, 'src', 'web-worker.js')
   },
   output: {
     path: path.join(cwd, 'public'),
@@ -30,6 +32,6 @@ module.exports = {
   devServer: {
     contentBase: path.join(cwd, 'public'),
     compress: true,
-    port: 8083
+    port: 8082
   }
 };
