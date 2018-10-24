@@ -15,8 +15,8 @@ self.addEventListener('message', async ({data}) => {
     //   break;
 
     case 'start':
-      await install(true);
-      await poller();
+      install(true);
+      poller();
 
       setInterval(poller, 1000 * 10);
 
@@ -34,7 +34,7 @@ async function install (force = false) {
     const response = await fetch('./version.json');
     const {version} = await response.json();
 
-    await set('version', version);
+    set('version', version);
   }
 }
 
